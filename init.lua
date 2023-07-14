@@ -1,4 +1,4 @@
-local S = technic.getter
+local S = function(s) return s end
 
 local infinite_stacks = minetest.settings:get_bool("creative_mode")
 	and minetest.get_modpath("unified_inventory") == nil
@@ -243,7 +243,7 @@ for xm = 0, 1 do
 						if nameext ~= "111111" then groups.not_in_creative_inventory = 1 end
 
 
-						minetest.register_node("technic:frame_" .. nameext, {
+						minetest.register_node("frames:frame_" .. nameext, {
 							description = S("Frame"),
 							tiles = { "technic_frame.png" },
 							groups = groups,
@@ -258,7 +258,7 @@ for xm = 0, 1 do
 							},
 							paramtype = "light",
 							frame = 1,
-							drop = "technic:frame_111111",
+							drop = "frames:frame_111111",
 							sunlight_propagates = true,
 
 							frame_connect_all = function(nodename)
@@ -313,7 +313,7 @@ for xm = 0, 1 do
 								local node = minetest.get_node(pos)
 								if node.name ~= "air" then
 									if is_supported_node(node.name) then
-										local obj = minetest.add_entity(pos, "technic:frame_entity")
+										local obj = minetest.add_entity(pos, "frames:frame_entity")
 										obj:get_luaentity():set_node({ name = itemstack:get_name() })
 									end
 								else
@@ -366,7 +366,7 @@ for xm = 0, 1 do
 										itemstack:take_item()
 									end
 
-									local obj = minetest.add_entity(pos, "technic:frame_entity")
+									local obj = minetest.add_entity(pos, "frames:frame_entity")
 									obj:get_luaentity():set_node({ name = node.name })
 
 									return itemstack
@@ -385,7 +385,7 @@ for xm = 0, 1 do
 	end
 end
 
-minetest.register_entity("technic:frame_entity", {
+minetest.register_entity("frames:frame_entity", {
 	initial_properties = {
 		physical = true,
 		collisionbox = { -0.5, -0.5, -0.5, 0.5, 0.5, 0.5 },
@@ -435,7 +435,7 @@ minetest.register_entity("technic:frame_entity", {
 	end,
 
 	dig = function(self)
-		minetest.handle_node_drops(self.object:get_pos(), { ItemStack("technic:frame_111111") }, self.last_puncher)
+		minetest.handle_node_drops(self.object:get_pos(), { ItemStack("frames:frame_111111") }, self.last_puncher)
 		local pos = vector.round(self.object:get_pos())
 		frames_pos[pos_to_string(pos)] = nil
 		self.object:remove()
@@ -444,7 +444,7 @@ minetest.register_entity("technic:frame_entity", {
 	on_punch = function(self, puncher, time_from_last_punch, tool_capabilities, dir)
 		local pos = self.object:get_pos()
 		if self.damage_object == nil then
-			self.damage_object = minetest.add_entity(pos, "technic:damage_entity")
+			self.damage_object = minetest.add_entity(pos, "frames:damage_entity")
 			self.damage_object:get_luaentity().remaining_time = 0.25
 			self.damage_object:get_luaentity().frame_object = self
 			self.damage_object:get_luaentity().texture_index = 0
@@ -496,7 +496,7 @@ minetest.register_entity("technic:frame_entity", {
 })
 
 local crack = "crack_anylength.png^[verticalframe:5:0"
-minetest.register_entity("technic:damage_entity", {
+minetest.register_entity("frames:damage_entity", {
 	initial_properties = {
 		visual = "cube",
 		visual_size = { x = 1.01, y = 1.01 },
@@ -529,8 +529,8 @@ minetest.register_entity("technic:damage_entity", {
 	end,
 })
 
-mesecon.register_mvps_unmov("technic:frame_entity")
-mesecon.register_mvps_unmov("technic:damage_entity")
+mesecon.register_mvps_unmov("frames:frame_entity")
+mesecon.register_mvps_unmov("frames:damage_entity")
 mesecon.register_on_mvps_move(function(moved_nodes)
 	local to_move = {}
 	for _, n in ipairs(moved_nodes) do
@@ -549,8 +549,8 @@ mesecon.register_on_mvps_move(function(moved_nodes)
 			local objects = minetest.get_objects_inside_radius(t.oldpos, 0.1)
 			for _, obj in ipairs(objects) do
 				local entity = obj:get_luaentity()
-				if entity and (entity.name == "technic:frame_entity" or
-						entity.name == "technic:damage_entity") then
+				if entity and (entity.name == "frames:frame_entity" or
+						entity.name == "frames:damage_entity") then
 					obj:set_pos(t.pos)
 				end
 			end
@@ -565,7 +565,7 @@ minetest.register_on_dignode(function(pos, node)
 		local objects = minetest.get_objects_inside_radius(pos, 0.1)
 		for _, obj in ipairs(objects) do
 			local entity = obj:get_luaentity()
-			if entity and (entity.name == "technic:frame_entity" or entity.name == "technic:damage_entity") then
+			if entity and (entity.name == "frames:frame_entity" or entity.name == "frames:damage_entity") then
 				obj:remove()
 			end
 		end
@@ -630,7 +630,7 @@ local function frame_motor_on(pos, node)
 	minetest.get_meta(vector.add(pos, dir)):set_int("last_moved", minetest.get_gametime())
 end
 
-minetest.register_node("technic:frame_motor", {
+minetest.register_node("frames:frame_motor", {
 	description = S("Frame Motor"),
 	tiles = {
 		"pipeworks_filter_top.png^[transformR90", "technic_lv_cable.png", "technic_lv_cable.png",
@@ -668,13 +668,13 @@ local function template_connected(pos, c, connectors)
 	for _, vect in ipairs(vects) do
 		local pos1 = vector.add(pos, vect)
 		local nodename = minetest.get_node(pos1).name
-		if not pos_in_list(c, pos1) and (nodename == "technic:template" or
-				nodename == "technic:template_connector") then
+		if not pos_in_list(c, pos1) and (nodename == "frames:template" or
+				nodename == "frames:template_connector") then
 			local meta = minetest.get_meta(pos1)
 			if meta:get_string("connected") == "" then
 				c[#c + 1] = pos1
 				template_connected(pos1, c, connectors)
-				if nodename == "technic:template_connector" then
+				if nodename == "frames:template_connector" then
 					connectors[#connectors + 1] = pos1
 				end
 			end
@@ -685,7 +685,7 @@ end
 local function get_templates(pos)
 	local c = { pos }
 	local connectors
-	if minetest.get_node(pos).name == "technic:template_connector" then
+	if minetest.get_node(pos).name == "frames:template_connector" then
 		connectors = { pos }
 	else
 		connectors = {}
@@ -698,7 +698,7 @@ local function swap_template(pos, new)
 	local meta = minetest.get_meta(pos)
 	local saved_node = meta:get_string("saved_node")
 	meta:set_string("saved_node", "")
-	technic.swap_node(pos, new)
+	frames.swap_node(pos, new)
 	meta = minetest.get_meta(pos)
 	meta:set_string("saved_node", saved_node)
 end
@@ -706,11 +706,11 @@ end
 local function save_node(pos)
 	local node = minetest.get_node(pos)
 	if node.name == "air" then
-		minetest.set_node(pos, { name = "technic:template" })
+		minetest.set_node(pos, { name = "frames:template" })
 		return
 	end
-	if node.name == "technic:template" then
-		swap_template(pos, "technic:template_connector")
+	if node.name == "frames:template" then
+		swap_template(pos, "frames:template_connector")
 		local meta = minetest.get_meta(pos)
 		meta:set_string("connected", "")
 		return
@@ -725,7 +725,7 @@ local function save_node(pos)
 	end
 
 	node.meta = meta0
-	minetest.set_node(pos, { name = "technic:template" })
+	minetest.set_node(pos, { name = "frames:template" })
 	return node
 end
 
@@ -780,7 +780,7 @@ local function compress_templates(pos)
 				cc[pos_to_string(np)] = true
 			end
 		end
-		swap_template(cn, "technic:template")
+		swap_template(cn, "frames:template")
 		meta:set_string("connected", minetest.serialize(c))
 		meta:set_string("connectors_connected", minetest.serialize(cc))
 	end
@@ -798,10 +798,10 @@ local function template_drops(pos, node, oldmeta, digger)
 	local drops
 
 	if c == "" or c == nil then
-		drops = { "technic:template 1" }
+		drops = { "frames:template 1" }
 	else
 		if cc == "" or cc == nil then
-			drops = { "technic:template 1" }
+			drops = { "frames:template 1" }
 		else
 			local dcc = minetest.deserialize(cc)
 			if next(dcc) ~= nil then
@@ -821,10 +821,10 @@ local function template_drops(pos, node, oldmeta, digger)
 				local num = #minetest.deserialize(c)
 				drops = {}
 				while num > stack_max do
-					drops[#drops + 1] = "technic:template " .. stack_max
+					drops[#drops + 1] = "frames:template " .. stack_max
 					num = num - stack_max
 				end
-				drops[#drops + 1] = "technic:template " .. num
+				drops[#drops + 1] = "frames:template " .. num
 			end
 		end
 	end
@@ -841,7 +841,7 @@ local function template_on_destruct(pos, node)
 	end
 end
 
-minetest.register_node("technic:template", {
+minetest.register_node("frames:template", {
 	description = S("Template"),
 	tiles = { "technic_mv_cable.png" },
 	drop = "",
@@ -849,11 +849,11 @@ minetest.register_node("technic:template", {
 	on_destruct = template_on_destruct,
 	after_dig_node = template_drops,
 	on_punch = function(pos, node, puncher)
-		swap_template(pos, "technic:template_disabled")
+		swap_template(pos, "frames:template_disabled")
 	end
 })
 
-minetest.register_node("technic:template_disabled", {
+minetest.register_node("frames:template_disabled", {
 	description = S("Template"),
 	tiles = { "technic_hv_cable.png" },
 	drop = "",
@@ -862,11 +862,11 @@ minetest.register_node("technic:template_disabled", {
 	after_dig_node = template_drops,
 	on_punch = function(pos, node, puncher)
 		local _ = minetest.get_meta(pos)
-		swap_template(pos, "technic:template_connector")
+		swap_template(pos, "frames:template_connector")
 	end
 })
 
-minetest.register_node("technic:template_connector", {
+minetest.register_node("frames:template_connector", {
 	description = S("Template"),
 	tiles = { "technic_lv_cable.png" },
 	drop = "",
@@ -874,11 +874,11 @@ minetest.register_node("technic:template_connector", {
 	on_destruct = template_on_destruct,
 	after_dig_node = template_drops,
 	on_punch = function(pos, node, puncher)
-		swap_template(pos, "technic:template")
+		swap_template(pos, "frames:template")
 	end
 })
 
-minetest.register_craftitem("technic:template_replacer", {
+minetest.register_craftitem("frames:template_replacer", {
 	description = S("Template (replacing)"),
 	inventory_image = "technic_template_replacer.png",
 	on_place = function(itemstack, placer, pointed_thing)
@@ -887,7 +887,7 @@ minetest.register_craftitem("technic:template_replacer", {
 			return nil
 		end
 		local node = minetest.get_node(p)
-		if node.name == "technic:template" then return end
+		if node.name == "frames:template" then return end
 		local saved_node = save_node(p)
 		itemstack:take_item()
 		if saved_node ~= nil then
@@ -898,7 +898,7 @@ minetest.register_craftitem("technic:template_replacer", {
 	end
 })
 
-minetest.register_tool("technic:template_tool", {
+minetest.register_tool("frames:template_tool", {
 	description = S("Template Tool"),
 	inventory_image = "technic_template_tool.png",
 	on_use = function(itemstack, puncher, pointed_thing)
@@ -907,7 +907,7 @@ minetest.register_tool("technic:template_tool", {
 			return nil
 		end
 		local node = minetest.get_node(pos)
-		if node.name ~= "technic:template" and node.name ~= "technic:template_connector" then return end
+		if node.name ~= "frames:template" and node.name ~= "frames:template_connector" then return end
 		local meta = minetest.get_meta(pos)
 		local c2 = meta:get_string("connected")
 		if c2 ~= "" then
@@ -951,14 +951,14 @@ local function template_motor_on(pos, node)
 		return
 	end
 	local owner = meta:get_string("owner")
-	if nnode.name == "technic:template" then
+	if nnode.name == "frames:template" then
 		local connected_nodes = get_template_nodes(nnodepos)
 		move_nodes_vect(connected_nodes, dir, pos, owner)
 	end
 	minetest.get_meta(vector.add(pos, dir)):set_int("last_moved", minetest.get_gametime())
 end
 
-minetest.register_node("technic:template_motor", {
+minetest.register_node("frames:template_motor", {
 	description = S("Template Motor"),
 	tiles = {
 		"pipeworks_filter_top.png^[transformR90",
@@ -979,7 +979,7 @@ minetest.register_node("technic:template_motor", {
 
 -- Crafts
 minetest.register_craft({
-	output = 'technic:frame_111111',
+	output = 'frames:frame_111111',
 	recipe = {
 		{ '',              'default:stick',               '' },
 		{ 'default:stick', 'basic_materials:brass_ingot', 'default:stick' },
@@ -988,16 +988,16 @@ minetest.register_craft({
 })
 
 minetest.register_craft({
-	output = 'technic:frame_motor',
+	output = 'frames:frame_motor',
 	recipe = {
-		{ '',                                  'technic:frame_111111',  '' },
+		{ '',                                  'frames:frame_111111',  '' },
 		{ 'group:mesecon_conductor_craftable', 'basic_materials:motor', 'group:mesecon_conductor_craftable' },
-		{ '',                                  'technic:frame_111111',  '' },
+		{ '',                                  'frames:frame_111111',  '' },
 	}
 })
 
 minetest.register_craft({
-	output = 'technic:template 10',
+	output = 'frames:template 10',
 	recipe = {
 		{ '',                            'basic_materials:brass_ingot', '' },
 		{ 'basic_materials:brass_ingot', 'default:mese_crystal',        'basic_materials:brass_ingot' },
@@ -1006,28 +1006,28 @@ minetest.register_craft({
 })
 
 minetest.register_craft({
-	output = 'technic:template_replacer',
-	recipe = { { 'technic:template' } }
+	output = 'frames:template_replacer',
+	recipe = { { 'frames:template' } }
 })
 
 minetest.register_craft({
-	output = 'technic:template',
-	recipe = { { 'technic:template_replacer' } }
+	output = 'frames:template',
+	recipe = { { 'frames:template_replacer' } }
 })
 
 minetest.register_craft({
-	output = 'technic:template_motor',
+	output = 'frames:template_motor',
 	recipe = {
-		{ '',                                  'technic:template',      '' },
+		{ '',                                  'frames:template',      '' },
 		{ 'group:mesecon_conductor_craftable', 'basic_materials:motor', 'group:mesecon_conductor_craftable' },
-		{ '',                                  'technic:template',      '' },
+		{ '',                                  'frames:template',      '' },
 	}
 })
 
 minetest.register_craft({
-	output = 'technic:template_tool',
+	output = 'frames:template_tool',
 	recipe = {
-		{ '',                     'technic:template', '' },
+		{ '',                     'frames:template', '' },
 		{ 'default:mese_crystal', 'default:stick',    'default:mese_crystal' },
 		{ '',                     'default:stick',    '' },
 	}
