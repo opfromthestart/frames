@@ -2,7 +2,7 @@
 Minetest mod for frames (used to be in technic)
 
 # Authors
-Ekdohibs
-RealBadAngel
-khonkhortisan
-opfromthestart
+* Ekdohibs
+* RealBadAngel
+* khonkhortisan
+* opfromthestart
